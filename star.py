@@ -22,12 +22,12 @@ class Star(Sprite):
     
     def update(self):
         """Перемещает звёзды вниз по OY."""
-        self.y += self.settings.star_speed
+        self.y += (self.settings.star_speed * self.settings.fleet_direction)
         self.rect.y = self.y
-    
+
 
     def check_edges(self):
         """"Определяет достигли ли звёзды края по OY."""
         screen_rect = self.screen.get_rect()
-        if self.rect.bottom > screen_rect.bottom or self.rect.top < screen_rect.top:
+        if self.rect.bottom >= screen_rect.bottom or self.rect.top < 0:
             return True

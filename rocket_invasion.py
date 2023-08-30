@@ -47,7 +47,7 @@ class RocketInvasion:
                 self._check_keydown_events(event)
             elif event.type == pygame.KEYUP:
                 self._check_keyup_events(event)
-    
+
 
     def _check_keydown_events(self, event):
         """Реагирует на нажатие клавиш."""
@@ -59,8 +59,8 @@ class RocketInvasion:
             sys.exit()
         elif event.key == pygame.K_SPACE:
             self._fire_bullet()
-            
-    
+
+
 
     def _check_keyup_events(self, event):
         """Реагирует на отпускание клавиш."""
@@ -68,7 +68,7 @@ class RocketInvasion:
             self.ship.moving_up = False
         elif event.key == pygame.K_DOWN:
             self.ship.moving_down = False
-    
+
 
     def _fire_bullet(self):
         """Создание нового снаряда и включение его в группу Bullet."""
@@ -92,7 +92,7 @@ class RocketInvasion:
             self.bullets, self.stars, True, True)
         if not self.stars:
             self.bullets.empty()
-            self._create_fleet()      
+            self._create_sky()      
     
 
     def _create_sky(self):
@@ -135,7 +135,15 @@ class RocketInvasion:
         """Проверка достижения края экрана."""
         for star in self.stars.sprites():
             if star.check_edges():
+                self._change_fleet_direction()
                 break
+    
+
+    def _change_fleet_direction(self):
+        """Спуск влево и смена направления движения."""
+        for star in self.stars.sprites():
+            star.rect.x -= self.settings.fleet_drop_speed
+        self.settings.fleet_direction *= -1
 
 
     def _update_screen(self):
