@@ -1,5 +1,8 @@
 import sys
+from time import sleep
 import pygame
+
+from game_stats import Gamestats
 from settings import Settings
 from rocket import Rocket
 from bullet import Bullet
@@ -19,6 +22,8 @@ class RocketInvasion:
         self.settings.screen_width = self.screen.get_rect().width
         self.settings.screen_height = self.screen.get_rect().height
         pygame.display.set_caption('Rocket launcher')
+
+        self.stats = Gamestats(self)
         
         self.ship = Rocket(self)
 
@@ -33,11 +38,14 @@ class RocketInvasion:
         """Запуск основного цикла игры."""
         while True:
             self._check_events()
-            self.ship.update()
-            self._update_bullets()
-            self._update_stars()
+
+            if self.stats.game_active:
+                self.ship.update()
+                self._update_bullets()
+                self._update_stars()
+
             self._update_screen()
-    
+
 
     def _check_events(self):
         for event in pygame.event.get():
@@ -59,7 +67,6 @@ class RocketInvasion:
             sys.exit()
         elif event.key == pygame.K_SPACE:
             self._fire_bullet()
-
 
 
     def _check_keyup_events(self, event):
@@ -93,7 +100,7 @@ class RocketInvasion:
         if not self.stars:
             self.bullets.empty()
             self._create_sky()      
-    
+
 
     def _create_sky(self):
         """Создание звёздного неба."""
@@ -129,6 +136,11 @@ class RocketInvasion:
     def _update_stars(self):
         self._check_fleet_edges()
         self.stars.update()
+
+        if pygame.sprite.spritecollideany(self.ship, self.stars):
+            self._ship_hit()
+        
+        self._check_star_bottom()
     
 
     def _check_fleet_edges(self):
@@ -144,6 +156,30 @@ class RocketInvasion:
         for star in self.stars.sprites():
             star.rect.x -= self.settings.fleet_drop_speed
         self.settings.fleet_direction *= -1
+
+
+    def _check_star_bottom(self):
+        """Проверяет, добрались ли звёзды до нижнего края экрана."""
+        screen_rect = self.screen.get_rect()
+        for star in self.stars.sprites():
+            if star.rect.left <= screen_rect.left:
+                self._ship_hit()
+                break
+    
+
+    def _ship_hit(self):
+        """Обрабатывает столкновение корабля с пришельцем."""
+        if self.stats.ships_left > 0:
+            self.stats.ships_left -= 1
+
+            self.stars.empty()
+            self.bullets.empty()
+
+            self._create_sky()
+            self.ship.center_rocket()
+            sleep(1)
+        else:
+            self.stats.game_active = False
 
 
     def _update_screen(self):
